@@ -1,8 +1,17 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
-import { Flame, Dumbbell, Leaf, Zap, Music, Clock, ArrowRight } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import {
+  Flame,
+  Dumbbell,
+  Leaf,
+  Zap,
+  Music,
+  Clock,
+  ArrowRight,
+  Volume2,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const categories = [
@@ -20,6 +29,7 @@ const categories = [
     color: "text-red-400",
     bgColor: "bg-red-400/10",
     borderColor: "border-red-400/20",
+    shadowColor: "shadow-red-400/5",
     genres: ["EDM", "Pop", "Drum & Bass"],
     spotifyEmbed:
       "https://open.spotify.com/embed/playlist/37i9dQZF1DX76Wlfdnj7AP?utm_source=generator&theme=0",
@@ -38,6 +48,7 @@ const categories = [
     color: "text-primary",
     bgColor: "bg-primary/10",
     borderColor: "border-primary/20",
+    shadowColor: "shadow-primary/5",
     genres: ["Hip-Hop", "Trap", "Metal"],
     spotifyEmbed:
       "https://open.spotify.com/embed/playlist/37i9dQZF1DX70RN3TfnE9m?utm_source=generator&theme=0",
@@ -56,6 +67,7 @@ const categories = [
     color: "text-accent",
     bgColor: "bg-accent/10",
     borderColor: "border-accent/20",
+    shadowColor: "shadow-accent/5",
     genres: ["Ambient", "Lo-fi", "Acoustic"],
     spotifyEmbed:
       "https://open.spotify.com/embed/playlist/37i9dQZF1DX9uKNf5jGX6m?utm_source=generator&theme=0",
@@ -74,6 +86,7 @@ const categories = [
     color: "text-orange-400",
     bgColor: "bg-orange-400/10",
     borderColor: "border-orange-400/20",
+    shadowColor: "shadow-orange-400/5",
     genres: ["Techno", "Dubstep", "House"],
     spotifyEmbed:
       "https://open.spotify.com/embed/playlist/37i9dQZF1DX9MpMnDhMxRb?utm_source=generator&theme=0",
@@ -82,12 +95,46 @@ const categories = [
 
 export function WorkoutCategories() {
   const [activeCategory, setActiveCategory] = useState(categories[0]);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [showPlayer, setShowPlayer] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    if (sectionRef.current) observer.observe(sectionRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  const handleCategoryChange = (cat: (typeof categories)[0]) => {
+    if (cat.id === activeCategory.id) return;
+    setIsTransitioning(true);
+    setShowPlayer(false);
+    setTimeout(() => {
+      setActiveCategory(cat);
+      setIsTransitioning(false);
+    }, 250);
+  };
 
   return (
-    <section id="workouts" className="relative py-24">
+    <section id="workouts" ref={sectionRef} className="relative py-24">
       <div className="mx-auto max-w-7xl px-6">
         {/* Section header */}
-        <div className="mb-16">
+        <div
+          className="mb-16 transition-all duration-700"
+          style={{
+            opacity: isVisible ? 1 : 0,
+            transform: isVisible ? "translateY(0)" : "translateY(20px)",
+          }}
+        >
           <p className="text-xs font-semibold uppercase tracking-widest text-primary">
             Workout Categories
           </p>
@@ -101,7 +148,13 @@ export function WorkoutCategories() {
 
         <div className="grid gap-8 lg:grid-cols-12">
           {/* Category selector */}
-          <div className="flex flex-col gap-3 lg:col-span-4">
+          <div
+            className="flex flex-col gap-3 lg:col-span-4 transition-all duration-700 delay-200"
+            style={{
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? "translateX(0)" : "translateX(-20px)",
+            }}
+          >
             {categories.map((cat) => {
               const Icon = cat.icon;
               const isActive = activeCategory.id === cat.id;
@@ -109,34 +162,32 @@ export function WorkoutCategories() {
                 <button
                   type="button"
                   key={cat.id}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`group flex items-center gap-4 rounded-xl border p-4 text-left transition-all ${
+                  onClick={() => handleCategoryChange(cat)}
+                  className={`group flex items-center gap-4 rounded-xl border p-4 text-left transition-all duration-300 ${
                     isActive
-                      ? `${cat.borderColor} ${cat.bgColor}`
-                      : "border-border bg-card hover:border-border/80 hover:bg-secondary/50"
+                      ? `${cat.borderColor} ${cat.bgColor} shadow-lg ${cat.shadowColor}`
+                      : "border-border bg-card hover:border-border/80 hover:bg-secondary/50 hover:translate-x-1"
                   }`}
                 >
                   <div
-                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg ${
-                      isActive ? cat.bgColor : "bg-secondary"
+                    className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg transition-all duration-300 ${
+                      isActive ? `${cat.bgColor} scale-110` : "bg-secondary group-hover:scale-105"
                     }`}
                   >
                     <Icon
-                      className={`h-5 w-5 ${isActive ? cat.color : "text-muted-foreground"}`}
+                      className={`h-5 w-5 transition-colors duration-300 ${
+                        isActive ? cat.color : "text-muted-foreground"
+                      }`}
                     />
                   </div>
                   <div className="flex-1">
-                    <p
-                      className={`font-display text-base font-semibold ${
-                        isActive ? "text-foreground" : "text-foreground"
-                      }`}
-                    >
+                    <p className="font-display text-base font-semibold text-foreground">
                       {cat.title}
                     </p>
                     <p className="text-sm text-muted-foreground">{cat.subtitle}</p>
                   </div>
                   <ArrowRight
-                    className={`h-4 w-4 transition-transform ${
+                    className={`h-4 w-4 transition-all duration-300 ${
                       isActive
                         ? `${cat.color} translate-x-0`
                         : "translate-x-[-4px] text-muted-foreground opacity-0 group-hover:translate-x-0 group-hover:opacity-100"
@@ -148,15 +199,25 @@ export function WorkoutCategories() {
           </div>
 
           {/* Active category detail */}
-          <div className="lg:col-span-8">
-            <div className="overflow-hidden rounded-2xl border border-border bg-card">
+          <div
+            className="lg:col-span-8 transition-all duration-700 delay-300"
+            style={{
+              opacity: isVisible ? 1 : 0,
+              transform: isVisible ? "translateX(0)" : "translateX(20px)",
+            }}
+          >
+            <div
+              className={`overflow-hidden rounded-2xl border border-border bg-card transition-all duration-300 ${
+                isTransitioning ? "opacity-0 scale-[0.98]" : "opacity-100 scale-100"
+              }`}
+            >
               {/* Image header */}
-              <div className="relative h-64 md:h-80">
+              <div className="relative h-64 overflow-hidden md:h-80">
                 <Image
                   src={activeCategory.image || "/placeholder.svg"}
                   alt={`${activeCategory.title} workout`}
                   fill
-                  className="object-cover"
+                  className="object-cover transition-transform duration-700 hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-card via-card/40 to-transparent" />
                 <div className="absolute bottom-6 left-6 right-6">
@@ -165,7 +226,7 @@ export function WorkoutCategories() {
                       <Badge
                         key={genre}
                         variant="secondary"
-                        className="border border-border/50 bg-background/60 text-foreground backdrop-blur-sm"
+                        className="border border-border/50 bg-background/60 text-foreground backdrop-blur-sm transition-transform hover:scale-105"
                       >
                         {genre}
                       </Badge>
@@ -210,17 +271,28 @@ export function WorkoutCategories() {
                   </div>
                 </div>
 
-                {/* Spotify embed */}
+                {/* Spotify embed with click-to-load */}
                 <div className="mt-6">
-                  <iframe
-                    title={`${activeCategory.title} Spotify Playlist`}
-                    src={activeCategory.spotifyEmbed}
-                    width="100%"
-                    height="152"
-                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                    loading="lazy"
-                    className="rounded-xl"
-                  />
+                  {!showPlayer ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowPlayer(true)}
+                      className={`flex w-full items-center justify-center gap-3 rounded-xl border border-dashed ${activeCategory.borderColor} ${activeCategory.bgColor} py-6 text-sm font-semibold ${activeCategory.color} transition-all hover:bg-secondary/50 hover:shadow-md`}
+                    >
+                      <Volume2 className="h-5 w-5" />
+                      Listen to {activeCategory.title} Playlist
+                    </button>
+                  ) : (
+                    <iframe
+                      title={`${activeCategory.title} Spotify Playlist`}
+                      src={activeCategory.spotifyEmbed}
+                      width="100%"
+                      height="152"
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                      className="rounded-xl"
+                    />
+                  )}
                 </div>
               </div>
             </div>
