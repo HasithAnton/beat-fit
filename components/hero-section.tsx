@@ -7,15 +7,33 @@ import { Button } from "@/components/ui/button";
 
 function AudioVisualizer() {
   const bars = 24;
+  const [barStyles, setBarStyles] = useState<
+    { duration: string; delay: string; height: string }[]
+  >([]);
+
+  useEffect(() => {
+    setBarStyles(
+      Array.from({ length: bars }).map(() => ({
+        duration: `${0.8 + Math.random() * 0.6}s`,
+        delay: `${Math.random() * 0.5}s`,
+        height: `${14 + Math.random() * 26}px`,
+      }))
+    );
+  }, []);
+
+  if (barStyles.length === 0) {
+    return <div className="flex items-end gap-[3px] h-10" aria-hidden="true" />;
+  }
+
   return (
     <div className="flex items-end gap-[3px] h-10" aria-hidden="true">
-      {Array.from({ length: bars }).map((_, i) => (
+      {barStyles.map((s, i) => (
         <span
           key={i}
           className="w-[3px] rounded-full bg-primary/70"
           style={{
-            animation: `barBounce ${0.8 + Math.random() * 0.6}s ease-in-out ${Math.random() * 0.5}s infinite alternate`,
-            height: `${14 + Math.random() * 26}px`,
+            animation: `barBounce ${s.duration} ease-in-out ${s.delay} infinite alternate`,
+            height: s.height,
           }}
         />
       ))}

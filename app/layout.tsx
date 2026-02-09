@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${_inter.variable} ${_spaceGrotesk.variable}`}>
       <body className="font-sans antialiased">{children}</body>
     </html>
   );
