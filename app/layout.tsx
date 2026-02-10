@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: "BEATFIT - Workout + Music Pairing",
   description:
     "Find the perfect music for every workout. Cardio, strength, yoga - paired with curated playlists to power your training.",
+  manifest: "/manifest.json",
 };
 
 export const viewport: Viewport = {
